@@ -2,26 +2,27 @@
 
 set -e
 
-IMAGE_NAME=template-survey-auto-code # FIXME: Update image name to include the name of project.
+IMAGE_NAME=demo-survey-auto-code
 
 # Check that the correct number of arguments were provided.
-if [ $# -ne 5 ]; then
-    echo "Usage: sh docker-run.sh <user> <json-input-path> <json-output-path> <coding-mode> <coded-output-path>"
+if [ $# -ne 6 ]; then
+    echo "Usage: sh docker-run.sh <user> <json-input-path> <key-of-raw> <json-output-path> <coding-mode> <coded-output-path>"
     exit
 fi
 
 # Assign the program arguments to bash variables.
 USER=$1
 INPUT_JSON=$2
-OUTPUT_JSON=$3
-CODING_MODE=$4
-CODING_DIR=$5
+KEY_OF_RAW=$3
+OUTPUT_JSON=$4
+CODING_MODE=$5
+CODING_DIR=$6
 
 # Build an image for this pipeline stage.
 docker build -t "$IMAGE_NAME" .
 
 # Create a container from the image that was just built.
-container="$(docker container create --env USER="$USER" --env CODING_MODE="$CODING_MODE" "$IMAGE_NAME")"
+container="$(docker container create --env USER="$USER" --env KEY_OF_RAW="$KEY_OF_RAW" --env CODING_MODE="$CODING_MODE" "$IMAGE_NAME")"
 
 function finish {
     # Tear down the container when done.
