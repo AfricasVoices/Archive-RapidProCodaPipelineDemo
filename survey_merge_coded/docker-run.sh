@@ -2,11 +2,11 @@
 
 set -e
 
-IMAGE_NAME=template-survey-merge-coded # FIXME: Update image name to include the name of project.
+IMAGE_NAME=demo-survey-merge-coded
 
 # Check that the correct number of arguments were provided.
-if [ $# -ne 5 ]; then
-    echo "Usage: sh docker-run.sh <user> <json-input-path> <coding-mode> <coded-output-path> <json-output-path>"
+if [ $# -ne 7 ]; then
+    echo "Usage: sh docker-run.sh <user> <json-input-path> <coding-mode> <coded-input-path> <key-of-raw> <json-output-path> <csv-output-path>"
     exit
 fi
 
@@ -15,13 +15,15 @@ USER=$1
 INPUT_JSON=$2
 CODING_MODE=$3
 CODING_DIR=$4
-OUTPUT_JSON=$5
+KEY_OF_RAW=$5
+OUTPUT_JSON=$6
+OUTPUT_CSV=$7
 
 # Build an image for this pipeline stage.
 docker build -t "$IMAGE_NAME" .
 
 # Create a container from the image that was just built.
-container="$(docker container create --env USER="$USER" --env CODING_MODE="$CODING_MODE" "$IMAGE_NAME")"
+container="$(docker container create --env USER="$USER" --env CODING_MODE="$CODING_MODE" --env KEY_OF_RAW="$KEY_OF_RAW" "$IMAGE_NAME")"
 
 function finish {
     # Tear down the container when done.
@@ -39,3 +41,6 @@ docker start -a -i "$container"
 # Copy the output data back out of the container
 mkdir -p "$(dirname "$OUTPUT_JSON")"
 docker cp "$container:/data/output.json" "$OUTPUT_JSON"
+
+mkdir -p "$(dirname "$OUTPUT_CSV")"
+docker cp "$container:/data/output.csv" "$OUTPUT_CSV"
